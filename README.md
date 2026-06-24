@@ -9,6 +9,7 @@ Collection d'agents, commandes et skills réutilisables pour Claude Code, accumu
 ├── agents/             Agents génériques (dev backend NestJS, dev frontend Angular, tests, doc, git, orchestration)
 ├── commands/           Commandes slash génériques (structuration de prompt, brainstorm contradictoire)
 ├── skills/             Skills génériques réutilisables sur n'importe quel projet
+├── cheat-sheets/       Pense-bêtes condensés par techno (backend/frontend/infra)
 └── ddd-medical-project/  Skills/agents/règles spécifiques à un projet DDD du domaine médical (voir son README)
 ```
 
@@ -40,6 +41,10 @@ Collection d'agents, commandes et skills réutilisables pour Claude Code, accumu
 | `review-pr/` | Review de PR contre les règles d'architecture DDD/CQRS/Event Sourcing |
 | `majestic-avalanche/` | Orchestrateur de pipeline de développement automatisé (dev → test → doc → git → PR) |
 | `start-task/` | Démarre une tâche Azure DevOps : crée la branche, détecte un template de pipeline automatique |
+
+## cheat-sheets/
+
+Pense-bêtes 1-page par techno : backend (NestJS/DDD/CQRS/Event Sourcing, Prisma/MongoDB, Kafka, Zod, Jest), frontend (Angular 19, single-spa/Module Federation), infra (Docker Compose/Traefik/Make, CLI d'outillage). Voir [cheat-sheets/README.md](cheat-sheets/README.md).
 
 ## ddd-medical-project/
 
