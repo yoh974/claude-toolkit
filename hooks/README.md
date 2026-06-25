@@ -93,6 +93,55 @@ git status -sb 2>/dev/null | jq -Rs '{hookSpecificOutput:{hookEventName:"Session
 ```
 Injecte l'état git du dépôt dans le contexte de la session au démarrage.
 
+## Hooks fournis par un plugin (exemple : caveman)
+
+Un plugin peut **livrer ses propres hooks** : pas besoin de les écrire dans `settings.json`, ils sont déclarés dans le manifeste du plugin et chargés automatiquement quand le plugin est activé (`enabledPlugins`). Le chemin des scripts utilise le placeholder `${CLAUDE_PLUGIN_ROOT}`, résolu vers la racine du plugin.
+
+Le plugin [caveman](https://github.com/JuliusBrussee/caveman) (mode de communication ultra-compressé) déclare deux hooks :
+
+```json
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/caveman-activate.js\"",
+          "timeout": 5,
+          "statusMessage": "Loading caveman mode..."
+        }
+      ]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"${CLAUDE_PLUGIN_ROOT}/src/hooks/caveman-mode-tracker.js\"",
+          "timeout": 5,
+          "statusMessage": "Tracking caveman mode..."
+        }
+      ]
+    }
+  ]
+}
+```
+
+- `SessionStart` → `caveman-activate.js` : active le mode et injecte les règles de style au démarrage.
+- `UserPromptSubmit` → `caveman-mode-tracker.js` : ré-injecte un rappel du mode à chaque prompt et suit le niveau actif (`lite`/`full`/`ultra`).
+
+Le plugin fournit aussi un **statusline** (badge `[CAVEMAN]`) à activer côté `settings.json` :
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/src/hooks/caveman-statusline.sh\""
+}
+```
+
+> À retenir : pour un comportement réutilisable et versionné, un **plugin** (hooks + skills + commandes packagés) est préférable à des hooks épars dans `settings.json`. Les hooks de plugin et ceux de `settings.json` coexistent et se cumulent sur un même événement.
+
 ## Permissions
 
 ```json
