@@ -1,0 +1,54 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(git push --force *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '\"\\(now|todate) \\(.tool_input.command)\"' >> ~/.claude/bash-history.log 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // .tool_response.filePath' | { read -r f; notify-send \"Claude Code\" \"Modifié: $f\"; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.message' | { read -r m; notify-send \"Claude Code\" \"$m\"; } 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git status -sb 2>/dev/null | jq -Rs '{hookSpecificOutput:{hookEventName:\"SessionStart\",additionalContext:(\"Git status:\\n\"+.)}}' 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

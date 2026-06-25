@@ -9,6 +9,7 @@ Collection d'agents, commandes et skills réutilisables pour Claude Code, accumu
 ├── agents/             Agents génériques (dev backend NestJS, dev frontend Angular, tests, doc, git, orchestration)
 ├── commands/           Commandes slash génériques (structuration de prompt, brainstorm contradictoire)
 ├── skills/             Skills génériques réutilisables sur n'importe quel projet
+├── hooks/              Hooks Claude Code (config settings.json + doc)
 ├── cheat-sheets/       Pense-bêtes condensés par techno (backend/frontend/infra)
 └── ddd-medical-project/  Skills/agents/règles spécifiques à un projet DDD du domaine médical (voir son README)
 ```
@@ -43,6 +44,10 @@ Collection d'agents, commandes et skills réutilisables pour Claude Code, accumu
 | `start-task/` | Démarre une tâche Azure DevOps : crée la branche, détecte un template de pipeline automatique |
 | `ts-typing-angular/` | Guide de typage TypeScript expert appliqué à Angular (signals, formulaires réactifs, models) |
 | `ts-typing-nestjs/` | Guide de typage TypeScript expert appliqué à NestJS (DTOs, domain events, CQRS/Event Sourcing) |
+
+## hooks/
+
+Hooks Claude Code prêts à l'emploi (`PreToolUse`, `PostToolUse`, `Notification`, `SessionStart`) + garde-fous de permissions. Config d'exemple anonymisée et documentation des événements, de l'entrée/sortie JSON et de l'application. Voir [hooks/README.md](hooks/README.md).
 
 ## cheat-sheets/
 
