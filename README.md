@@ -41,6 +41,8 @@ Collection d'agents, commandes et skills réutilisables pour Claude Code, accumu
 | `review-pr/` | Review de PR contre les règles d'architecture DDD/CQRS/Event Sourcing |
 | `majestic-avalanche/` | Orchestrateur de pipeline de développement automatisé (dev → test → doc → git → PR) |
 | `start-task/` | Démarre une tâche Azure DevOps : crée la branche, détecte un template de pipeline automatique |
+| `ts-typing-angular/` | Guide de typage TypeScript expert appliqué à Angular (signals, formulaires réactifs, models) |
+| `ts-typing-nestjs/` | Guide de typage TypeScript expert appliqué à NestJS (DTOs, domain events, CQRS/Event Sourcing) |
 
 ## cheat-sheets/
 
