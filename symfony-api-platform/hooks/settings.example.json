@@ -1,0 +1,18 @@
+{
+  "_comment": "Hook API Platform : rappel de regénérer la doc OpenAPI après modification d'un fichier #[ApiResource]. Injecter dans .claude/settings.json ou .claude/settings.local.json. Nécessite : jq installé.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo ''); if echo \"$FILE\" | grep -qE '\\.php$'; then if [ -f \"$FILE\" ] && grep -qE '#\\[ApiResource' \"$FILE\" 2>/dev/null; then echo '{\"hookSpecificOutput\":{\"additionalContext\":\"[api-platform] Fichier contenant #[ApiResource] modifié. Pense à regénérer la doc OpenAPI : php bin/console api:openapi:export --output=public/api.json\"}}'; fi; fi",
+            "timeout": 5,
+            "statusMessage": "api-platform : vérification des resources modifiées..."
+          }
+        ]
+      }
+    ]
+  }
+}
