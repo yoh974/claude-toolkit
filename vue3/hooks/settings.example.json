@@ -1,0 +1,18 @@
+{
+  "_comment": "Hook de review automatique Vue 3. Injecter ce contenu dans .claude/settings.json ou .claude/settings.local.json de votre projet. Nécessite : jq installé, agent vue-reviewer dans .claude/agents/.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); CMD=$(echo \"$INPUT\" | jq -r '.tool_input.command // \"\"' 2>/dev/null || echo ''); if echo \"$CMD\" | grep -qE '^git[[:space:]]+commit'; then DIFF=$(git diff --staged -- '*.vue' '*.ts' '*.tsx' 2>/dev/null | head -500); if [ -n \"$DIFF\" ]; then printf '%s' \"$DIFF\" | jq -Rs '{hookSpecificOutput:{additionalContext:(\"[vue-reviewer] Fichiers Vue 3 stagés détectés avant commit. Invoke the vue-reviewer agent on this diff first, then proceed with the commit if no critical issues are found.\\n\\nStaged diff (truncated at 500 lines):\\n```diff\\n\"+.+\"\\n```\")}}' 2>/dev/null || true; fi; fi",
+            "timeout": 15,
+            "statusMessage": "vue-reviewer : analyse du diff stagé..."
+          }
+        ]
+      }
+    ]
+  }
+}
