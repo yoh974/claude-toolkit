@@ -28,6 +28,7 @@ Copiez les agents dans `.claude/agents/` et les hooks dans `.claude/settings.jso
 | `/symfony-scheduler MessageClass '0 8 * * *'` | Crée Message + Schedule + Handler + config Messenger |
 | `/symfony-workflow workflow-name EntityClass` | Configure un Workflow ou StateMachine avec YAML, guards, listeners |
 | `/symfony-webhook stripe` | Implémente un récepteur webhook (RequestParser, RemoteEvent, Consumer) |
+| `/symfony-notification OrderConfirmed email,slack` | Crée une Notification Symfony (Notifier) avec canaux configurables : email, browser, slack, telegram, sms |
 
 ---
 
