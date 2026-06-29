@@ -12,6 +12,8 @@ Copiez les agents dans `.claude/agents/` et les hooks dans `.claude/settings.jso
 |---|---|---|
 | `symfony-dev` | Développeur PHP/Symfony senior — implémente features, services, repositories, entities | sonnet |
 | `symfony-architect` | Expert architecture hexagonale, DDD, Messenger, sécurité — ADR et conseils | sonnet |
+| `symfony-security` | Expert sécurité — firewalls, auth (form/JWT/token/OAuth2), Voters, injections, rate limiting | sonnet |
+| `symfony-qa` | Ingénieur QA ISTQB — tests d'intégration, fonctionnels et exploratoires pour compléter les tests unitaires | sonnet |
 | `symfony-reviewer` | Relecteur automatique déclenché au `git commit` — analyse le diff stagé | sonnet |
 | `symfony-doc` | Rédacteur PHPDoc, ADR et README pour bundles | haiku |
 

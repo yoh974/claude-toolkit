@@ -124,10 +124,85 @@ php bin/console debug:config api_platform
 
 ---
 
+## Logging (Monolog / PSR-3)
+
+### Injection
+Injecter `Psr\Log\LoggerInterface` par constructeur avec `private readonly` dans les Providers et Processors :
+```php
+public function __construct(
+    private readonly LoggerInterface $logger,
+) {}
+```
+Pour un canal dédié (ex. `api`) :
+```php
+#[Autowire(service: 'monolog.logger.api')]
+private readonly LoggerInterface $logger,
+```
+
+### Quand logger — règle par niveau
+
+| Niveau | Quand l'utiliser |
+|--------|-----------------|
+| `debug` | Payload reçu, paramètres de filtre, état intermédiaire dans un Provider |
+| `info` | Ressource créée/modifiée/supprimée avec succès (Processor), opération custom exécutée |
+| `notice` | Fallback appliqué, resource introuvable mais géré proprement (404 attendu) |
+| `warning` | Payload suspect, violation de contrainte récupérée, accès refusé par un Voter |
+| `error` | Exception catchée dans un Processor/Provider, appel externe échoué |
+| `critical` | Service externe indisponible bloquant l'opération entière |
+
+### Ce qu'il faut toujours logger
+- **Processors** : début de traitement (`debug`), succès (`info`), exception (`error`)
+- **Providers custom** : source de données résolue (`debug`), erreur de fetch (`error`)
+- **Opérations custom** (controllers dédiés) : entrée avec IRI/ID et user, résultat
+- **Appels à des services tiers** dans les Processors (paiement, stockage, email) : résultat `info`, échec `error`
+- **Refus d'accès** loggés dans le Voter (`warning`) avec `user_id` et resource IRI
+
+### Ce qu'il ne faut JAMAIS logger
+- Mots de passe, tokens JWT/API key, données sensibles du payload
+- Corps complets des requêtes contenant des données RGPD
+- Stacks traces complètes en dehors des niveaux `error`/`critical`
+
+### Format — contexte structuré obligatoire
+Toujours utiliser un tableau de contexte avec l'IRI ou l'ID de la resource :
+```php
+// Correct
+$this->logger->info('Resource created', [
+    'resource' => 'Post',
+    'id'       => $post->getId(),
+    'user_id'  => $this->security->getUser()?->getId(),
+]);
+$this->logger->error('Processor failed', ['resource' => 'Post', 'exception' => $e]);
+
+// Interdit
+$this->logger->info("Post {$post->getId()} created by user {$userId}");
+```
+
+### Pattern type dans un Processor
+```php
+public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Post
+{
+    $this->logger->debug('Processing Post write', ['operation' => $operation->getName()]);
+
+    try {
+        $this->entityManager->persist($data);
+        $this->entityManager->flush();
+
+        $this->logger->info('Post persisted', ['id' => $data->getId()]);
+
+        return $data;
+    } catch (\Exception $e) {
+        $this->logger->error('Post persist failed', ['exception' => $e]);
+        throw $e;
+    }
+}
+```
+
+---
+
 ## Workflow d'implémentation
 
 1. **Lire** les entities et resources existantes pour respecter les conventions du projet.
-2. **Ordre** : Entity + `#[ApiResource]` → Provider(s) → Processor(s) → Filters.
+2. **Ordre** : Entity + `#[ApiResource]` → Provider(s) → Processor(s, avec logs) → Filters.
 3. **Valider** avec `api:openapi:export` après chaque ajout d'opération.
 4. **Tester** avec `curl` ou l'interface Swagger UI (`/api/docs`).
 5. **Signaler** si une dependency (Voter, Service, Repository) est manquante.

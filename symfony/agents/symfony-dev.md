@@ -74,11 +74,82 @@ src/
 
 ---
 
+## Logging (Monolog / PSR-3)
+
+### Injection
+Toujours injecter `Psr\Log\LoggerInterface` par constructeur avec `private readonly` :
+```php
+public function __construct(
+    private readonly LoggerInterface $logger,
+) {}
+```
+Pour un canal Monolog spécifique, utiliser l'attribut `#[Autowire]` :
+```php
+#[Autowire(service: 'monolog.logger.payment')]
+private readonly LoggerInterface $logger,
+```
+
+### Quand logger — règle par niveau
+
+| Niveau | Quand l'utiliser |
+|--------|-----------------|
+| `debug` | Données internes utiles au débogage local (valeurs de variables, requêtes, états intermédiaires) |
+| `info` | Actions métier normales qui ont réussi (entité créée, email envoyé, job terminé) |
+| `notice` | Événements inhabituels mais non-bloquants (fallback utilisé, configuration manquante mais valeur par défaut appliquée) |
+| `warning` | Situation anormale récupérée, comportement dégradé, paramètre déprécié utilisé |
+| `error` | Erreur concrète non-fatale (exception catchée, appel externe échoué avec retry possible) |
+| `critical` | Erreur grave qui bloque une fonctionnalité entière (DB injoignable, clé API manquante) |
+
+### Ce qu'il faut toujours logger
+- Entrée/sortie des **handlers Messenger** (`info` en début, `error` si exception)
+- **Commands console** : début, fin, et erreurs d'exécution
+- **Appels à des services externes** (API, paiements) : succès `info`, échec `error` avec code/réponse
+- **Voters** : refus d'accès avec contexte (`warning`)
+- **Exceptions catchées** dans les services : `error` avec `exception` en contexte
+- **Migrations de données** ou opérations batch : progression `info` et erreurs par enregistrement
+
+### Ce qu'il ne faut JAMAIS logger
+- Mots de passe, tokens, numéros de carte, données RGPD sensibles
+- Stacks traces complètes en `info` ou `debug` (uniquement dans `error`/`critical`)
+- Requêtes SQL complètes avec données personnelles
+
+### Format — contexte structuré obligatoire
+Toujours passer un tableau de contexte, jamais de string interpolation :
+```php
+// Correct
+$this->logger->info('Order confirmed', ['order_id' => $order->getId(), 'total' => $order->getTotal()]);
+$this->logger->error('Payment failed', ['order_id' => $id, 'exception' => $e]);
+
+// Interdit
+$this->logger->info("Order {$order->getId()} confirmed for {$amount}€");
+```
+
+### Pattern type dans un service
+```php
+public function processOrder(Order $order): void
+{
+    $this->logger->info('Processing order', ['order_id' => $order->getId()]);
+
+    try {
+        // logique métier
+        $this->logger->info('Order processed successfully', ['order_id' => $order->getId()]);
+    } catch (PaymentException $e) {
+        $this->logger->error('Order payment failed', [
+            'order_id' => $order->getId(),
+            'exception' => $e,
+        ]);
+        throw $e;
+    }
+}
+```
+
+---
+
 ## Workflow d'implémentation
 
 1. **Lire** les fichiers existants du module cible avant d'écrire (ne pas supposer le pattern).
 2. **Respecter le pattern** du service/controller le plus proche dans le projet.
-3. **Ordre d'écriture** : Entity → Repository → Service → Controller → Tests.
+3. **Ordre d'écriture** : Entity → Repository → Service (avec logs) → Controller → Tests.
 4. **Vérifier** après modifications d'Entity : `php bin/console doctrine:schema:validate`.
 5. **Vider le cache** si un fichier de config YAML est modifié : `php bin/console cache:clear`.
 6. **Signaler** immédiatement si une interface, un type ou un bundle manque.

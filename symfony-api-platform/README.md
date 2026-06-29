@@ -13,6 +13,7 @@ Copiez les agents dans `.claude/agents/` et les hooks dans `.claude/settings.jso
 | Agent | Rôle | Modèle |
 |---|---|---|
 | `api-platform-dev` | Expert API Platform 3.x — Resources, Providers, Processors, Filters, OpenAPI | sonnet |
+| `api-platform-qa` | Ingénieur QA ISTQB — tests d'intégration (Providers/Processors), tests HTTP JSON-LD, sérialisation, filtres, sécurité par opération | sonnet |
 
 ---
 
